@@ -13,25 +13,17 @@ class CrawlParser(HTMLParser):
 
   def handle_starttag(self, tag, attrs):
     if tag == 'a':
-      link = self.get_attr_value('href', attrs)
-      if link:
-        full_url = urljoin(base_url, link)
-        self.href_links.append(full_url)
+      self.add_attr('href', attrs, self.href_links)
     if tag == 'link':
-      stylesheet = self.get_attr_value('stylesheet', attrs)
-      if stylesheet:
-        full_url = urljoin(base_url, stylesheet)
-        self.assets.append(full_url)
-    if tag == 'script':
-      script = self.get_attr_value('src', attrs)
-      if script:
-        full_url = urljoin(base_url, script)
-        self.assets.append(full_url)
-    if tag == 'img':
-      image = self.get_attr_value('src', attrs)
-      if image:
-        full_url = urljoin(base_url, image)
-        self.assets.append(full_url)
+      self.add_attr('stylesheet', attrs, self.assets)
+    if tag == 'script' or tag == 'img':
+      self.add_attr('src', attrs, self.assets)
+
+  def add_attr(self, attr_name, attrs, dest):
+    data = self.get_attr_value(attr_name, attrs)
+    if data:
+      full_url = urljoin(base_url, data)
+      dest.append(full_url)
 
   def get_attr_value(self, target_attr, attrs):
     for attr, value in attrs:
