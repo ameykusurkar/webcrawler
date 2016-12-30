@@ -6,7 +6,6 @@ class CrawlParser(HTMLParser):
 
   def handle_starttag(self, tag, attrs):
     if tag == 'a':
-      self.count += 1
       self.store_href_link(attrs)
 
   def store_href_link(self, attrs):
