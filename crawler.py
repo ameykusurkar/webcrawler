@@ -1,6 +1,6 @@
 from crawlparser import CrawlParser
 
-base_url = "http://gocardless.com"
+base_url = "http://www.doc.ic.ac.uk/~ajd"
 parser = CrawlParser(base_url)
 links, assets = [], []
 try:
