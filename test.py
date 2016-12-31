@@ -1,5 +1,6 @@
 import unittest
 from crawlparser import CrawlParser
+from crawler import in_subdomain
 
 class TestCrawler(unittest.TestCase):
 
@@ -20,6 +21,22 @@ class TestCrawler(unittest.TestCase):
     expected_result = (expected_links, expected_assets)
     result = parser.crawl(url)
     self.assertEquals(result, expected_result)
+
+  def test_accept_subdomain(self):
+    original_domain = "http://gocardless.com"
+    test_link = "http://gocardless.com/developers"
+    self.assertTrue(in_subdomain(test_link, original_domain))
+
+  def test_reject_different_domain(self):
+    original_domain = "http://gocardless.com"
+    test_link = "http://www.google.co.uk/intl/en/about/"
+    self.assertFalse(in_subdomain(test_link, original_domain))
+
+  def test_reject_cross_domain(self):
+    original_domain = "http://gocardless.com"
+    test_link = "http://developer.gocardless.com/getting-started/api/introduction/"
+    self.assertFalse(in_subdomain(test_link, original_domain))
+
 
 
 if __name__ == '__main__':
