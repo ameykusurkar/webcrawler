@@ -1,5 +1,5 @@
 from urllib2 import urlopen, URLError
-from HTMLParser import HTMLParser
+from HTMLParser import HTMLParser, HTMLParseError
 from urlparse import urljoin
 
 # Given a URL, parser finds all the links and static assets on the page
@@ -45,11 +45,18 @@ class CrawlParser(HTMLParser):
   # Given a URL, returns all links and assets on the page
   def crawl(self, url):
     try:
-      content = urlopen(url).read()
+      url = url.encode('UTF-8')
+      content = urlopen(url)
+      encoding = content.headers.getparam('charset')
+      if not encoding:
+        encoding = 'UTF-8'
+      content = content.read().decode(encoding)
       self.feed(content)
       return (self.href_links, self.assets)
+    except HTMLParseError:
+      return (self.href_links, self.assets)
     except URLError:
-      return []
-    except ValueError:
+      return ([],[])
+    except ValueError, e:
       raise
 
