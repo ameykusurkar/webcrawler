@@ -3,9 +3,12 @@ from HTMLParser import HTMLParser, HTMLParseError
 from urlparse import urljoin
 from crawlerutils import add_slash
 
-# Given a URL, parser finds all the links and static assets on the page
-# Only the method CrawlParser.crawl(url) is called externally
-# Other methods are used interally to parse and build data
+"""
+Given a URL, parser finds all the links and static
+assets (images, javascript, stylesheets) on the page.
+Only the method CrawlParser.crawl(url) is called externally,
+other methods are used interally during parsing.
+"""
 class CrawlParser(HTMLParser):
 
   def __init__(self, base_url):
@@ -19,12 +22,14 @@ class CrawlParser(HTMLParser):
   # Extracts links and assets as it encounters relevant tags
   def handle_starttag(self, tag, attrs):
     if tag == 'a':
+      # Store href links
       self.add_attr('href', attrs, self.href_links)
-    if tag == 'link':
-      # Only add to assets is link is a stylesheet
-      if self.get_attr_value('rel', attrs) == 'stylesheet':
-        self.add_attr('href', attrs, self.assets)
+    # Only add to assets if link is a stylesheet
+    if tag == 'link' and self.get_attr_value('rel', attrs) == 'stylesheet':
+      # Store stylesheets as static assets
+      self.add_attr('href', attrs, self.assets)
     if tag == 'script' or tag == 'img':
+      # Store images and javascript as static assets
       self.add_attr('src', attrs, self.assets)
 
   # Adds attribute value to dest (links or assets)
@@ -50,13 +55,14 @@ class CrawlParser(HTMLParser):
       encoding = content.headers.getparam('charset')
       if not encoding:
         encoding = 'UTF-8'
-      content = content.read().decode(encoding)
+      # Characters that cannot be recognised are ignored
+      content = content.read().decode(encoding, "ignore")
       self.feed(content)
       return (self.href_links, self.assets)
     except HTMLParseError:
+      # Return whatever links and assets found so far
       return (self.href_links, self.assets)
-    except URLError:
+    except (URLError, ValueError):
+      # Could not access URL
       return None
-    except ValueError, e:
-      raise
 

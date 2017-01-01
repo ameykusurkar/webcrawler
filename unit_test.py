@@ -1,11 +1,11 @@
 import unittest
 from urllib2 import URLError
 from crawlparser import CrawlParser
-from crawlerutils import in_subdomain, assets_json
+from crawlerutils import in_subdomain, assets_json, add_slash
 
 class TestCrawler(unittest.TestCase):
 
-  def test_invalid_url_raises_exception(self):
+  def test_invalid_url_returns_none(self):
     # base_url is not important here
     base_url = "http://example.com"
     parser = CrawlParser(base_url)
@@ -21,7 +21,7 @@ class TestCrawler(unittest.TestCase):
     self.assertEquals(result, None)
 
   def test_crawl_one_image_one_link(self):
-    base_url = "www.doc.ic.ac.uk/~avk13"
+    base_url = "http://www.doc.ic.ac.uk/~avk13"
     url = base_url
     parser = CrawlParser(base_url)
     expected_links = ["http://www.doc.ic.ac.uk/project/2014/163/g1416332/#introduction"]
@@ -44,6 +44,16 @@ class TestCrawler(unittest.TestCase):
     original_domain = "http://gocardless.com"
     test_link = "http://developer.gocardless.com/getting-started/api/introduction/"
     self.assertFalse(in_subdomain(test_link, original_domain))
+
+  def test_add_slash_with_slash(self):
+    url = "http://gocardless.com/"
+    result = add_slash(url)
+    self.assertEqual(url, result)
+
+  def test_add_slash_without_slash(self):
+    url = "http://gocardless.com"
+    result = add_slash(url)
+    self.assertEqual('http://gocardless.com/', result)
 
 if __name__ == '__main__':
   unittest.main()
