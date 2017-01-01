@@ -1,36 +1,31 @@
 from collections import deque
-from urlparse import urlparse, urldefrag
 from crawlparser import CrawlParser
+from urlparse import urldefrag
+from crawlerutils import add_slash, in_subdomain, StaticAssets, assets_json
 
-# Checks that link is within the original subdomain
-def in_subdomain(link, orig_url):
-  link_domain = urlparse(link).netloc
-  orig_domain = urlparse(orig_url).netloc
-  return link_domain == orig_domain
-
-def add_slash(url):
-  if url and url[-1] != '/':
-    url += '/'
-  return url
-
-base_url = "http://www.doc.ic.ac.uk/~fpj14"
+base_url = "http://www.doc.ic.ac.uk/~avk13"
 base_url = urldefrag(base_url)[0]
 base_url = add_slash(base_url)
 urls = deque([base_url])
+all_assets = []
 visited = set()
-count = 1
+count = 0
 while urls:
   parser = CrawlParser(base_url)
   url = urls.popleft()
-  if url in visited or url.endswith('.pdf'):
+  if url in visited:
     continue
   if count % 1 == 0:
     print("{} Visiting: {}".format(count, url))
     print("{} link(s) left in queue".format(len(urls)))
   try:
-    (links, assets) = parser.crawl(url)
+    result = parser.crawl(url)
+    if not result:
+      continue
+    (links, assets) = result
     count += 1
     visited.add(url)
+    all_assets.append(StaticAssets(url, assets))
     for link in links:
       link = urldefrag(link)[0]
       if in_subdomain(link, base_url) and link not in visited:
@@ -42,9 +37,7 @@ while urls:
 
 print("Visited {} site(s)".format(count))
 f = open('visited.txt', 'w')
-for link in visited:
-  f.write(link)
-  f.write('\n')
+f.write(assets_json(all_assets))
 
 """
 for l in links:

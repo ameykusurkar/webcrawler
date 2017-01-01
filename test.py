@@ -1,6 +1,7 @@
 import unittest
+from urllib2 import URLError
 from crawlparser import CrawlParser
-from crawler import in_subdomain
+from crawlerutils import in_subdomain
 
 class TestCrawler(unittest.TestCase):
 
@@ -11,6 +12,13 @@ class TestCrawler(unittest.TestCase):
     with self.assertRaises(ValueError):
       url = "This is not a valid URL"
       parser.crawl(url)
+
+  def test_unable_to_access_url_returns_none(self):
+    base_url = "http://www.google.co.uk"
+    parser = CrawlParser(base_url)
+    url = "http://www.google.co.uk/notvalid"
+    result = parser.crawl(url)
+    self.assertTrue(result == None)
 
   def test_crawl_one_image_one_link(self):
     base_url = "http://www.doc.ic.ac.uk/~avk13"

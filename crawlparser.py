@@ -1,6 +1,7 @@
 from urllib2 import urlopen, URLError
 from HTMLParser import HTMLParser, HTMLParseError
 from urlparse import urljoin
+from crawlerutils import add_slash
 
 # Given a URL, parser finds all the links and static assets on the page
 # Only the method CrawlParser.crawl(url) is called externally
@@ -10,9 +11,7 @@ class CrawlParser(HTMLParser):
   def __init__(self, base_url):
     # base_url needs to end with '/' for urljoin
     # used for converting relative paths into full urls
-    if base_url[-1] != '/':
-      base_url += '/'
-    self.base_url = base_url
+    self.base_url = add_slash(base_url)
     self.href_links = []
     self.assets = []
     HTMLParser.__init__(self)
@@ -22,7 +21,7 @@ class CrawlParser(HTMLParser):
     if tag == 'a':
       self.add_attr('href', attrs, self.href_links)
     if tag == 'link':
-      # Only add to assets is link is a css stylesheet
+      # Only add to assets is link is a stylesheet
       if self.get_attr_value('rel', attrs) == 'stylesheet':
         self.add_attr('href', attrs, self.assets)
     if tag == 'script' or tag == 'img':
@@ -43,6 +42,7 @@ class CrawlParser(HTMLParser):
     return None
 
   # Given a URL, returns all links and assets on the page
+  # Returns None if unable access URL
   def crawl(self, url):
     try:
       url = url.encode('UTF-8')
@@ -56,7 +56,7 @@ class CrawlParser(HTMLParser):
     except HTMLParseError:
       return (self.href_links, self.assets)
     except URLError:
-      return ([],[])
+      return None
     except ValueError, e:
       raise
 
